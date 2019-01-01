@@ -1,0 +1,163 @@
+---
+layout: post
+title:  "Sass 第一话"
+date:   2019-1-1 19:14:08 +0800
+tags: css
+---
+
+# -写在前面-
+
+我最早接触Sass大概在一年以前，但后面做的项目都比较简单慢慢就搁置了．
+后来加入现在的新公司，工作量一下大了起来．所以慢慢重拾Sass等一众预编译器．
+
+>什么是预编译器：
+
+有人开发了一些扩展css功能的写法，比如：less、Sass，其目的是让css能支持一些编程语言才有的功能，比如：
+表达式，函数，变量，循环，判断等
+一般预编译器文件要生成对应css文件才能直接用，听说less可以直接在Node环境中被直接识别渲染，但还未试过
+
+>优势：
+
+1. 快捷，相比传统css，语法糖能减少重复语句，提升工作效率
+2. 纠错，嵌套写法能保证权重，防止样式覆盖，减少起名（这点尤为重要）
+3. chrome，谷歌浏览器能识别预编译器文件，即使已被编译成css
+
+>我使用过的预编译器只有Sass，scss，stylus．目前个人习惯pc使用Sass，vue使用stylus，小程序使用css．
+
+下面简单阐述下原因：
+
+* **pc端**公司使用compact格式代码，也就是这样：
+
+{% highlight ruby%}
+.box { width: xx;}
+.box .contain{ width: xx;color: xx;}
+.box .contain .ul{ width: xx;}
+.box .contain div{ width: xx;}
+{% endhighlight %}
+
+这一点上，相比less和stylus，Sass拥有"--style"这个属性可以自定义css输出方式，就十分方便了
+
+* **再说scss**其实在最开始我也是使用scss的，但后面习惯Sass之后就抛弃"{}"的写法了（Sass和scss其实基本上算一个东西，这是公共的官网[Sass]）
+
+{% highlight ruby%}
+#Sass语法：
+.box 
+  width: xx
+  .contain
+    width: xx
+      div
+        width: xx
+
+#scss语法：
+.box {
+  width: xx;
+  .contain {
+    width: xx;
+    div {
+      width: xx;
+    }
+  }
+}
+
+#css语法：
+.box { width: xx; }
+.box .contain { width: xx; }
+.box .contain div { width: xx; }
+{% endhighlight %}
+
+* **在vue.cli中**引入Sass，less，stylus的依赖都是比较轻松的，所以上手上并无区别
+那为什么我青睐stylus呢，原因有二：
+
+1. stylus基于Node，~~当然这并没什么卵用~~
+2. stylus语法自由，容错高（Sass真的很严格，less没用过）
+
+* **坑货小程序**推荐使用css
+小程序中没有尝试使用过css预编译器，因为小程序新建页面会自动生成css文件，在创建Sass等文件会使目录结构混乱，不便于管理
+而且小程序调试在专门的开发者工具中，不知道其能否识别预编译器
+
+# -编译-
+
+一般像sass，less等文件是不能直接被网页渲染的，要先编译成css
+
+>使用Koala软件
+
+下载地址[Koala]，没什么使用难度
+
+>使用命令行
+
+这种方法仅限`sass`，less请使用Koala或者配置Node环境，stylus请配置Node环境，Koala不识别，vue安装依赖，无需手动编译（最终生成css,开发过程中无需编译）
+
+* 配置ruby环境，因为sass是使用ruby开发的，这里不写了，请自行百度或者[官网教程]
+* 安装完成后，创建sass文件（创建任意文件，后缀名改成`.sass`）
+* 在`sass文件所在文件夹`，打开命令行（shift + 右键->在此处打开命令行窗口），输入
+
+{% highlight ruby %}
+sass --watch --no-cache --sourcemap --debug-info --style compact xx.sass:xx.css
+{% endhighlight %}
+
+* `sass`命令，scss编译也使用sass命令
+* `--`每个配置选项前面使用`两个英文减号`开头
+* `--watch`自动编译，每次保存sass文件时，自动更新css，可不写
+* `--no-cache`不生成缓存文件夹（缓存文件夹名：.sass-cache），可不写
+* `--sourcemap`调试map,一个.map文件，默认生成，可不写
+* `--debug-info`开启debug信息，默认开启，bug信息会写在生成的css中，可不写
+* `--style`选择css编译格式,共四种
+
+{% highlight ruby  %}
+--style nested 
+#最像scss格式，容易样式覆盖，不推荐
+
+.box {
+  width: 300px;
+  height: 400px; }
+  .box-title {
+    height: 30px;
+    line-height: 30px; }
+{% endhighlight %}
+
+{% highlight ruby  %}
+--style expanded  
+#比较主流的格式，完全展开，less和stylus编译完的格式，竖直方向上很长
+
+.box {
+  width: 300px;
+  height: 400px;
+}
+.box-title {
+  height: 30px;
+  line-height: 30px;
+}
+{% endhighlight %}
+
+{% highlight ruby  %}
+--style compact
+#压缩文件，水平方向上很长
+
+.box { width: 300px; height: 400px; }
+.box-title { height: 30px; line-height: 30px; }
+{% endhighlight %}
+
+{% highlight ruby  %}
+--style compressed
+#完全压缩，没有空格和换行
+
+.box{width:300px;height:400px}.box-title{height:30px;line-height:30px}
+{% endhighlight %}
+
+* `xx.sass:xx.css`将sass文件编译为css文件
+
+1. "xx"为文件名，可以不一致
+1. ":"前后不能出现空格，否则报错
+3. 可以指定文件夹
+
+{% highlight ruby  %}
+xx.sass:public/yy.css
+
+'将xx.sass文件编译成yy.css文件并保存在名为public的文件夹里，pubic为当前文件夹的子文件夹'
+{% endhighlight %}
+
+
+
+[Sass]: https://www.sass.hk/
+[Koala]: http://koala-app.com/index-zh.html
+[官网教程]: https://www.sass.hk/install/
